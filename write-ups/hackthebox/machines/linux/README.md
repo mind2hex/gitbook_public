@@ -1,5 +1,5 @@
 ---
-cover: ../../../.gitbook/assets/artem-in-action2.png
+cover: ../../../../.gitbook/assets/artem-in-action2.png
 coverY: 94.60266666666666
 layout:
   cover:

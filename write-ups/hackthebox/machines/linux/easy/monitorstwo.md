@@ -2,7 +2,7 @@
 description: >-
   MonitorsTwo es una máquina Linux de dificultad fácil que muestra una variedad
   de vulnerabilidades y configuraciones incorrectas.
-cover: ../../../../.gitbook/assets/monitorstwo-htb.jpeg
+cover: ../../../../../.gitbook/assets/monitorstwo-htb.jpeg
 coverY: 0
 ---
 
