@@ -2,9 +2,9 @@
 description: Can you see me?
 ---
 
-# You Cant C Me
+# You cant c me
 
-## Análisis básico
+### Análisis básico
 
 Lo primero que hice fue analizar de forma básica el binario para saber que tipo de archivo es y de esta forma saber que hacer posteriormente. Esto se puede realizar con el comando **file**.
 
@@ -18,7 +18,7 @@ Del output anterior, lo que más nos interesa son los siguientes campos:
 * **dynamically linked**: Esto significa que el binario utiliza bibliotecas dinámicas en lugar de contener todo dentro del propio archivo ejecutable. En este caso podemos utilizar la herramienta **ltrace** para rastrear las llamadas a las librerías dinámicas que realice el binario.
 * **stripped:** Un binario "stripped" ha tenido toda o la mayoría de su información de depuración y símbolos eliminada. Esto hace que el análisis sea más difícil porque cosas como los nombres de las funciones no estarán disponibles.
 
-### Rastreando las llamadas a las librerías con ltrace
+#### Rastreando las llamadas a las librerías con ltrace
 
 **ltrace** ejecuta un comando dado e intercepta y registra las llamadas a las librerías dinámicas así que para esta tarea va a ser de bastante utilidad.
 
@@ -52,7 +52,7 @@ printf("HTB{%s}\n", "wh00ps!_y0u_d1d_c_m3"HTB{wh00ps!_y0u_d1d_c_m3}
 +++ exited (status 0) +++
 ```
 
-## Creando el código fuente a partir del binario
+### Creando el código fuente a partir del binario
 
 Con la información anterior ya tenemos idea de como funciona el binario y que funciones utiliza así que podemos crear un script en lenguaje C que almenos se parezca en funcionamiento al binario que acabamos de analizar.
 
