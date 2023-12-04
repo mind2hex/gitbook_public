@@ -7,7 +7,8 @@
 ## Write ups
 
 * [🧃 HackTheBox](write-ups/hackthebox/README.md)
-  * [Challenges](write-ups/hackthebox/challenges.md)
+  * [Challenges](write-ups/hackthebox/challenges/README.md)
+    * [Page](write-ups/hackthebox/challenges/page.md)
   * [Machines](write-ups/hackthebox/machines/README.md)
     * [Linux](write-ups/hackthebox/machines/linux/README.md)
       * [👿 Insane](write-ups/hackthebox/machines/linux/insane.md)
