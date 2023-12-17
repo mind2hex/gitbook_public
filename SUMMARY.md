@@ -9,6 +9,7 @@
 * [🧃 HackTheBox](write-ups/hackthebox/README.md)
   * [Challenges](write-ups/hackthebox/challenges/README.md)
     * [You cant c me](write-ups/hackthebox/challenges/you-cant-c-me.md)
+    * [Behind the scenes](write-ups/hackthebox/challenges/behind-the-scenes.md)
   * [Machines](write-ups/hackthebox/machines/README.md)
     * [Linux](write-ups/hackthebox/machines/linux/README.md)
       * [👿 Insane](write-ups/hackthebox/machines/linux/insane.md)
