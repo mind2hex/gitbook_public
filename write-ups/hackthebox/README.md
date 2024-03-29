@@ -1,18 +1,10 @@
 # 🧃 HackTheBox
 
-<details>
+{% content-ref url="machines/linux/" %}
+[linux](machines/linux/)
+{% endcontent-ref %}
 
-<summary>Linux </summary>
-
-
-
-</details>
-
-<details>
-
-<summary>Windows</summary>
-
-
-
-</details>
+{% content-ref url="machines/windows.md" %}
+[windows.md](machines/windows.md)
+{% endcontent-ref %}
 
