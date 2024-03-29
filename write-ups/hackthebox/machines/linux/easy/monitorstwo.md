@@ -5,7 +5,7 @@ coverY: 0
 
 # MonitorsTwo
 
-## General Information
+## 1. Machine General Information
 
 * **Operative System:** Linux
 * **Difficulty**: Easy
@@ -16,9 +16,9 @@ coverY: 0
   * CVE-2021-41091
   * CVE-2022-46169
 
-## User Flag
+## 2. Enumeration
 
-### Port Scanning
+### 2.1 Port Scanning
 
 ```
 $ sudo nmap -sC -T5 -Pn 10.10.11.211 
@@ -38,7 +38,7 @@ PORT   STATE SERVICE
 Nmap done: 1 IP address (1 host up) scanned in 17.91 seconds
 ```
 
-### Web Service Enumeration
+### 2.2 Web Service Enumeration
 
 The web service is running Cacti v1.2.22. This specific version of Cacti has a remote code execution (RCE) vulnerability.
 
@@ -55,7 +55,9 @@ Cacti v1.2.22 - Remote Command Execution (RCE)                                  
 Shellcodes: No Results
 ```
 
-### Exploiting CVE-2022-46169 vulnerability for Cacti v1.2.22
+## 3. Exploitation
+
+### 3.1 Exploiting CVE-2022-46169 vulnerability for Cacti v1.2.22
 
 Cacti v1.2.22 has a RCE vulnerability in the file **remote\_agent.php** in the funcion **poll\_for\_data()** that doesn't sanitize input parameters in **poll\_for\_data()** function.&#x20;
 
@@ -138,7 +140,7 @@ bash: no job control in this shell
 www-data@50bca5e748b0:/var/www/html$ 
 ```
 
-### Privilege Escalation inside the container
+### 3.2 Privilege Escalation inside the container
 
 Using `leanpeas.sh` to enumerate the container.
 
@@ -173,7 +175,7 @@ whoami
 root
 ```
 
-### Extracting and Cracking Hashes
+### 3.3 Extracting and Cracking Hashes
 
 Reading the content of the `/entrypoint.sh` script, we see some instructions that are being executed in a database called `cacti`.
 
@@ -269,9 +271,9 @@ marcus@monitorstwo:~$ cat user.txt
 d9947b0eae40f1554a10eda3b4035f08
 ```
 
-## Root Flag
+## 4. Privilege Escalation
 
-### Basic Enumeration
+### 4.1 Basic Enumeration
 
 The initial login banner tell us that we have mail so we have to inspect `/var/mail/marcus` .
 
@@ -302,7 +304,7 @@ Security Team
 
 This file is a clue of what we should do next. If we read carefully, it tell us that this system had some vulnerabilities. One of the vulnerabilities is CVE-2021-41091.
 
-### Exploiting CVE-2021-41091 vulnerability
+### 4.2 Exploiting CVE-2021-41091 vulnerability
 
 This Moby (Docker Engine) vulnerability, allow unauthenticated users in the machine, execute, read or modify files inside of the directory where container files are stored. (`/var/lib/docker/...xyz/merged/`). This means that if a user inside the container modify a binary to convert it to a SUID binary. then this SUID binary could be used to escalate privileges by other users using the  `/var/lib/docker/...xyz/merged/bin` path.&#x20;
 
@@ -384,7 +386,7 @@ bash-5.1# cat /root/root.txt
 bash-5.1# 
 </code></pre>
 
-## References
+## 5. References
 
 * [Cacti Repository](https://github.com/Cacti/cacti)
 * [Mind2hex github repo](https://github.com/mind2hex/HackTheBox/tree/master/Machines/Linux/MonitorsTwo)

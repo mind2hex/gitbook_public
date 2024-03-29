@@ -20,6 +20,7 @@
       * [😎 Easy](write-ups/hackthebox/machines/linux/easy/README.md)
         * [MonitorsTwo](write-ups/hackthebox/machines/linux/easy/monitorstwo.md)
         * [Headless](write-ups/hackthebox/machines/linux/easy/headless.md)
+        * [Perfection](write-ups/hackthebox/machines/linux/easy/perfection.md)
     * [Windows](write-ups/hackthebox/machines/windows.md)
 * [⚡ Microcorruption](write-ups/microcorruption.md)
 

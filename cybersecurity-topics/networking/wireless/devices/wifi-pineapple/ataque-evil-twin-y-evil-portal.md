@@ -52,13 +52,13 @@ El módulo Evil Portal nos provee de una interfaz gráfica para la configuració
 
 Una vez instalado el módulo, debemos clonar el siguiente repositorio
 
-<figure><img src="../../../../../.gitbook/assets/imagen.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/imagen (1).png" alt=""><figcaption></figcaption></figure>
 
 * [https://github.com/kleo/evilportals](https://github.com/kleo/evilportals).
 
 Posteriormente debemos seguir los pasos indicados en el repositorio para copiar los portales vía SCP al Wifi Pineapple en la ruta /root/portals. Al realizar esto, podremos ver los portales en la librería de portales en el módulo Evil-Portal.
 
-<figure><img src="../../../../../.gitbook/assets/imagen (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/imagen (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 Ahora para habilitar el Evil Portal, debemos iniciar el servicio web y habilitar el portal al cual queremos redirigir a los clientes que se conecten al fake AP, en este caso se habilitará Starbucks.Login y por último simplemente se debe oprimir el botón Start.
 
