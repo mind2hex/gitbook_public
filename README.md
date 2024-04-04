@@ -1,13 +1,17 @@
 ---
-description: mind2hex
+description: Cybersecurity notes
 cover: >-
   https://images.unsplash.com/photo-1613677135043-a2512fbf49fa?crop=entropy&cs=srgb&fm=jpg&ixid=M3wxOTcwMjR8MHwxfHNlYXJjaHwzfHxoYWNrfGVufDB8fHx8MTY4NTkwNjMyNnww&ixlib=rb-4.0.3&q=85
 coverY: 0
 ---
 
-# 💾 Introducción
+# 💾 Introduction
 
-Soy mind2hex y aquí encontraras write ups de páginas estilo CTF además de algunas técnicas empleadas en write ups y algunos lenguajes de programación entre otras cosas relacionadas al mundo de la ciberseguridad.
+I am mind2hex, here you'll find:
+
+* Write-ups from cybersecurity platforms like hackthebox, tryhackme, microcorruption, etc.&#x20;
+* Programming languages documentation and tips.
+* Miscelaneous cybersecurity topics like forensics, networking, web, etc.
 
 ## WRITE UPS
 

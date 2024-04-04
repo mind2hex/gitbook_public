@@ -1,8 +1,8 @@
 ---
 description: >-
-  En este tutorial, vamos a ejecutar un ataque Evil Twin para atraer usuarios a
-  una red WiFi falsa y luego usar un Evil Portal para recopilar sus
-  credenciales.
+  In this tutorial, we are going to execute  an Evil-twin/portal attack to
+  attract users to a false WiFi hotspot and then use an evil portal to harvest
+  user credentials.
 cover: https://img-c.udemycdn.com/course/750x422/2948934_985b_4.jpg
 coverY: 42
 layout:
@@ -21,81 +21,87 @@ layout:
     visible: true
 ---
 
-# Ataque Evil-Twin y Evil-Portal
+# Evil-Twin/Portal Attack
 
-## ¿Como funciona un ataque Evil Twin?
+## How an Evil Twin attack works?
 
 <figure><img src="https://www.researchgate.net/publication/321122614/figure/fig5/AS:631949064421377@1527679806852/Illustration-of-an-Evil-Twin-Attack-The-attacker-can-successfully-lure-a-victim-into.png" alt=""><figcaption><p>Evil Twin</p></figcaption></figure>
 
-Un ataque "Evil Twin" (Gemelo Malvado) es un tipo de ataque de ciberseguridad que se lleva a cabo creando un punto de acceso WiFi que imita o clona una red WiFi legítima. Este tipo de ataque tiene como objetivo engañar a los dispositivos para que se conecten a la red maliciosa en lugar de la red legítima. Una vez que un usuario se ha conectado al Evil Twin, el atacante puede llevar a cabo diversas acciones maliciosas, desde espionaje hasta ataques más elaborados como Man-in-the-Middle (MitM).
+An evil twin attack is a type of WiFi attack that creates a hotspot  mimicking or cloning a legitimate WiFi hotspot.  The main objective of this attack is to trick users into connecting to the fraudulent WiFi hotspot instead of the real one. Once a user is connected to the evil twin, an attacker can perform various attacks, such as spying on user's traffic or conducting a Man in the Middle (MitM) attack.
 
-## ¿Cómo funciona un ataque Evil Portal?
+## How an Evil Portal attack works?
 
-Un ataque Evil Portal consiste en presentar al usuario una página de inicio o portal cautivo falso después de que se haya conectado a una red WiFi. Esta página podría imitar la de un proveedor de servicios de Internet, un hotel, un café o incluso una actualización de sistema, y por lo general solicita la entrada de datos sensibles como credenciales, números de tarjeta de crédito, etc. Los pasos generalmente involucran lo siguiente:
+An evil portal attack involves redirecting a user to a captive portal page once they are connected to a malicious network. This captive portal can imitate the captive portal of the internet service provider, a hotel login page, etc. Generally speaking, the main purpose of the malicious captive portal (evil portal) is to recollect user sensitive information, such as login credentials. To carry out an evil twin attack, you need to follow the next steps:
 
-1. **Establecimiento de Conexión**: Primero, el atacante debe conseguir que el objetivo se conecte a una red WiFi controlada, que podría ser un Evil Twin o cualquier otro tipo de red no segura.
-2. **Redirección de Tráfico**: Una vez que el usuario está conectado, el tráfico web se redirige mediante técnicas como la manipulación de DNS o reglas de iptables, forzando al usuario a una página web específica: el Evil Portal.
-3. **Presentación del Portal**: El usuario ve la página de inicio falsa y, si el ataque es exitoso, introduce sus datos sensibles creyendo que está en un portal legítimo.
-4. **Captura de Datos**: El portal falso captura los datos introducidos y los envía al atacante, quien puede usarlos para fines maliciosos.
+1. **Establishing a connection**: First, the attacker has to trick a user into connecting to a malicious hotspot controlled by the attacker.
+2. **Traffic Redirection**: Once a user is connected to the evil hotspot, the user's web traffic is redirected using techniques like DNS manipulation or modifying iptables rules. This will force the user to visit a specific page, like the captive portal mentioned before.
+3. **Evil Portal Presentation**: The user sees the evil portal, and if the portal is convincingly designed, the user will input sensitive information in an HTML form, thinking  the portal is legitimate.
+4. **Data Stealing**: The evil portal logs the user's credentials, and now the attacker can see this sensitive information.
 
-## ¿Cómo redirige una red a un cliente al portal cautivo?
+## How a WiFi hotspot redirects users web traffic to a captive portal?
 
-La redirección a un portal cautivo se realiza generalmente a través de una combinación de reglas de firewall y manipulación de DNS en el punto de acceso o el servidor que controla la red. Aquí hay un resumen de alto nivel:
+The redirection to a captive portal is achieved through a combination of firewall rules and DNS manipulation within the hotspot or the server that controls network traffic. Here's a high level description:
 
-1. **Reglas de Firewall**: Cuando un nuevo dispositivo se conecta a la red, las reglas de firewall redirigen todo el tráfico HTTP/HTTPS del dispositivo a la dirección IP del portal cautivo. Esto se hace a menudo usando iptables u otras herramientas similares de manipulación de paquetes.
-2. **Manipulación de DNS**: Además de las reglas de firewall, se suele configurar un servidor DNS falso o manipulado para resolver todas las consultas de nombres a la dirección IP del portal cautivo. De esta manera, cuando el usuario intenta navegar a cualquier sitio web, la consulta DNS lo redirige al portal.
-3. **Sesión y Autenticación**: Una vez que el usuario completa la interacción con el portal cautivo (ya sea introduciendo información o aceptando términos y condiciones), las reglas de firewall y DNS se actualizan para permitir al dispositivo acceder a la red como de costumbre.
+### **1. Firewall Rules**:&#x20;
 
-## Módulo Evil Portal
+* Upon a new device connection to the network, firewall rules are set to redirect all HTTP/HTTPS traffic from this device to the captive portal IP address. This is often done using iptables or other tools for packet manipulation.
 
-El módulo Evil Portal nos provee de una interfaz gráfica para la configuración y despliegue de un ataque Evil-Portal de forma mucho mas automatizada. Para usarlo primero debemos instalarlo desde la sección de módulos del panel izquierdo.
+### **2. DNS Manipulation**:&#x20;
 
-Una vez instalado el módulo, debemos clonar el siguiente repositorio
+* In addition to the firewall rules, a fake DNS server is set up or manipulated to resolve all requests  to the IP address of the captive portal. Thus, when  the user tries to access any website, the DNS request is redirected to the captive portal.&#x20;
+
+### **3. Session and Authentication**:&#x20;
+
+* Once the user  completes the interaction with the captive portal, firewall rules and DNS settings are updated to allow the user's device to connect to the network normally.
+
+## Evil Portal Module
+
+The Evil Portal module allows us to configure and deploy an Evil-Portal attack automatically . To use this module, we first need to install it  from the modules section on the left panel.&#x20;
 
 <figure><img src="../../../../../.gitbook/assets/imagen (1).png" alt=""><figcaption></figcaption></figure>
 
-* [https://github.com/kleo/evilportals](https://github.com/kleo/evilportals).
+Once the module is installed, we need to clone the following repository to our machine:
 
-Posteriormente debemos seguir los pasos indicados en el repositorio para copiar los portales vía SCP al Wifi Pineapple en la ruta /root/portals. Al realizar esto, podremos ver los portales en la librería de portales en el módulo Evil-Portal.
+* [https://github.com/kleo/evilportals](https://github.com/kleo/evilportals)
+
+After cloning the repository, we need to trasnfer it to the WiFi Pineapple using SCP to the `/root/portals` path. Once this is done, we should see all captive portal templates in the Evil Portal module on the wifi pineapple.
 
 <figure><img src="../../../../../.gitbook/assets/imagen (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-Ahora para habilitar el Evil Portal, debemos iniciar el servicio web y habilitar el portal al cual queremos redirigir a los clientes que se conecten al fake AP, en este caso se habilitará Starbucks.Login y por último simplemente se debe oprimir el botón Start.
+Now, to enable the evil portal, we need to start the web service and select the portal we want to show to the users. After activating the web server and the desired captive portal template,  we should start the evil portal using the "Start" button located above the "start web server" button.
 
 <figure><img src="../../../../../.gitbook/assets/imagen (2).png" alt=""><figcaption></figcaption></figure>
 
-## Configurar el Open AP
+## Configuring the Open AP
 
-Lo primero que se debe realizar una vez instalado y configurado el modulo Evil Portal, es configurar el Open AP. Se debe marcar la opción para esconder el Open Access Point para evitar sospechas y también se debe marcar la opción para hacer que los AP en Spoofed AP Pool respondan a los probe requests. Con esta configuración, los clientes podran conectarse a los AP listados en el Spoofed AP Pool.
+First, I recommend to hide the Open Access Point to  avoid unwanted attention. It's important to enable the option that allows the APs in the Spoofed AP Pool to respond to probe requests. With this setting enabled, all clients can connect to the APs listed in the Spoofed AP Pool.
 
 <figure><img src="../../../../../.gitbook/assets/imagen (3).png" alt=""><figcaption></figcaption></figure>
 
-## Agregar los SSID al Spoofed AP Pool
+## Add the SSID to the Spoofed AP Pool
 
-Ahora debemos agregar los SSID que queremos personificar al Spoofed AP Pool.\
-Cuando agregas un SSID al "Spoofed AP Pool" en un WiFi Pineapple, estás configurando el dispositivo para emitir ese SSID como si fuera una red WiFi legítima. En términos simples, el WiFi Pineapple empezará a transmitir el SSID especificado como una red abierta o como una red que aparenta ser legítima. De esta manera, cualquier dispositivo cercano que esté buscando esa red en particular podría conectarse al WiFi Pineapple pensando que es una red legítima.
+Now we need to add the SSID that we want to impersonate to the Spoofed AP Pool. When an SSID is added to the Spoofed AP Pool, the WiFi Pineapple  will broadcast this SSID as if it were a legitimate WiFi network. This means that the WiFi Pineapple will transmit the specified SSID as an open WiFi network or as a WiFi that appears  to be legitimate. In this way, any device nearby that is searching for the specified SSID could potentially connect to the fake AP.
 
-Aquí hay una descomposición de lo que sucede a nivel técnico:
+Here's what happens at a technical level:
 
-1. **Transmisión de Beacon Frames**: El WiFi Pineapple empezará a transmitir "beacon frames" con el SSID que has añadido al Spoofed AP Pool. Estos "beacon frames" son paquetes que anuncian la existencia de una red WiFi.
-2. **Escaneo y Conexión**: Los dispositivos cercanos escanean en busca de redes WiFi conocidas. Si han estado conectados previamente a un SSID que coincide con el que has añadido al pool, es probable que intenten conectarse automáticamente.
-3. **Establecimiento de Conexión**: Una vez que un dispositivo intenta conectarse al SSID emitido, el WiFi Pineapple puede permitir la conexión, actuando como un punto de acceso.
-4. **Intercepción de Tráfico**: Ahora que el dispositivo objetivo está conectado al WiFi Pineapple, todo su tráfico de red pasa a través del dispositivo. Esto ofrece la oportunidad de llevar a cabo ataques MitM, captura de paquetes y otros tipos de actividades maliciosas o de investigación.
-5. **Manipulación de Tráfico**: En esta fase, un atacante podría realizar diferentes tipos de ataques, desde simplemente espiar el tráfico hasta modificarlo para inyectar malware o redirigir al usuario a sitios web maliciosos.
+1. **Beacon Frames Transmission:** The WiFi Pineapple starts to send "beacon frames" with the SSID specified in the Spoofed AP Pool. These beacon frames are packets that announce the existence of a WiFi network to every device nearby.
+2. **Scanning and Connection**: All devices scan near WiFI networks searching for known networks. If, after scanning, those devices find a known SSID that is in the Spoofed AP Pool, they are likely to connect to the fake AP.
+3. **Establishing a Connection**: Once a device attempts to establish a connection with the broadcasted  SSID, the WiFi Pineapple allows the connection, acting as an Access Point.
+4. **Traffic Interception**: Now that the target device is connected to the WiFi Pineapple, all of its network traffic passess through the WiFi Pineapple. This setup allows the WiFi Pineapple to perform various attacks like MitM, packet sniffing and other malicious activities.
 
-En este caso vamos a agregar el SSID "Star Bucks Free Wifi"
+In this case, we are going to add the SSID  "Star Bucks Free Wifi" to the Spoofed AP Pool.
 
 <figure><img src="../../../../../.gitbook/assets/imagen (4).png" alt=""><figcaption></figcaption></figure>
 
-Al escanear las redes WiFi cercanas podremos observar que aparece la red que acabamos de agregar al Spoofed AP Pool.
+While Scanning nearby WiFi networks, we can see the SSID we just added to the Spoofed AP Pool.
 
 <figure><img src="../../../../../.gitbook/assets/imagen (5).png" alt=""><figcaption></figcaption></figure>
 
-Cuando nos conectemos al Fake AP que acabamos de crear desde otro dispositivo, seremos redirigidos automáticamente al Evil Portal donde nos pediran credenciales para poder acceder.
+When a device connects to the fake AP that we just started, the device is going to be redirected to the evil portal where a login credential will be requested from the user.
 
 <figure><img src="../../../../../.gitbook/assets/imagen (6).png" alt=""><figcaption></figcaption></figure>
 
-Al introducir las credenciales, se enviará una notificación al Wifi Pineapple indicandonos que alguien ha caido en la trampa y podremos ver los datos que introdució en los logs del captive portal.
+If the user introduce his credentials, a notification will appear in the WiFi Pineapple telling us that someone has been fooled and we can see his credentials from the Evil Portal Module.
 
 <figure><img src="../../../../../.gitbook/assets/imagen (7).png" alt=""><figcaption></figcaption></figure>
 

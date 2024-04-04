@@ -2,7 +2,7 @@
 
 ## EntryPoint
 
-* [💾 Introducción](README.md)
+* [💾 Introduction](README.md)
 
 ## Write ups
 
@@ -38,7 +38,7 @@
   * [Wireless](cybersecurity-topics/networking/wireless/README.md)
     * [Devices](cybersecurity-topics/networking/wireless/devices/README.md)
       * [WiFi-PineApple](cybersecurity-topics/networking/wireless/devices/wifi-pineapple/README.md)
-        * [Ataque Evil-Twin y Evil-Portal](cybersecurity-topics/networking/wireless/devices/wifi-pineapple/ataque-evil-twin-y-evil-portal.md)
+        * [Evil-Twin/Portal Attack](cybersecurity-topics/networking/wireless/devices/wifi-pineapple/ataque-evil-twin-y-evil-portal.md)
 * [🌎 Web](cybersecurity-topics/web.md)
 * [📖 Crypto](cybersecurity-topics/crypto.md)
 * [💥 Binary Analysis](cybersecurity-topics/binary-analysis.md)
