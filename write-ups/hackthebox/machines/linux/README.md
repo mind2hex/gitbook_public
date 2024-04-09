@@ -29,8 +29,8 @@ layout:
 [hard.md](hard.md)
 {% endcontent-ref %}
 
-{% content-ref url="medium.md" %}
-[medium.md](medium.md)
+{% content-ref url="medium/" %}
+[medium](medium/)
 {% endcontent-ref %}
 
 {% content-ref url="easy/" %}
