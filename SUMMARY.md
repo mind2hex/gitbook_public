@@ -2,7 +2,7 @@
 
 ## EntryPoint
 
-* [💾 Introduction](README.md)
+* [💾 Who am i?](README.md)
 
 ## Write ups
 
@@ -28,7 +28,6 @@
 
 ## Programming
 
-* [💻 Lenguaje C/C++](programming/lenguaje-c-c++.md)
 * [🐍 Python](programming/python/README.md)
   * [Librerías](programming/python/librerias/README.md)
     * [ncurses](programming/python/librerias/ncurses.md)
