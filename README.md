@@ -109,20 +109,12 @@ Here you'll find:
 
 ## CYBERSECURITY
 
-{% content-ref url="cybersecurity-topics/forensics.md" %}
-[forensics.md](cybersecurity-topics/forensics.md)
-{% endcontent-ref %}
-
 {% content-ref url="cybersecurity-topics/networking/" %}
 [networking](cybersecurity-topics/networking/)
 {% endcontent-ref %}
 
 {% content-ref url="cybersecurity-topics/web.md" %}
 [web.md](cybersecurity-topics/web.md)
-{% endcontent-ref %}
-
-{% content-ref url="cybersecurity-topics/crypto.md" %}
-[crypto.md](cybersecurity-topics/crypto.md)
 {% endcontent-ref %}
 
 {% content-ref url="cybersecurity-topics/binary-analysis/" %}
