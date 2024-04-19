@@ -125,8 +125,8 @@ Here you'll find:
 [crypto.md](cybersecurity-topics/crypto.md)
 {% endcontent-ref %}
 
-{% content-ref url="cybersecurity-topics/binary-analysis.md" %}
-[binary-analysis.md](cybersecurity-topics/binary-analysis.md)
+{% content-ref url="cybersecurity-topics/binary-analysis/" %}
+[binary-analysis](cybersecurity-topics/binary-analysis/)
 {% endcontent-ref %}
 
 ***
