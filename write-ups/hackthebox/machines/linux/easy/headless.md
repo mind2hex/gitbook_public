@@ -174,7 +174,7 @@ Connection: close
 
 ### 3.2 Obtaining access
 
-<figure><img src="../../../../../.gitbook/assets/imagen.png" alt=""><figcaption><p>Headless.htb /dashboard page</p></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/imagen (2).png" alt=""><figcaption><p>Headless.htb /dashboard page</p></figcaption></figure>
 
 In the `/dashboard` page the only thing we can do is generate a report. Inspecting the request with BurpSuite we can see that a post parameter is sent to the dashboard:
 

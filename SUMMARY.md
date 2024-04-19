@@ -28,17 +28,17 @@
 
 ## Programming
 
-* [🐍 Python](programming/python/README.md)
-  * [Librerías](programming/python/librerias/README.md)
-    * [ncurses](programming/python/librerias/ncurses.md)
+* [🐍 Python](programming/python.md)
 
 ## 💽 Cybersecurity Topics
 
 * [📶 Networking](cybersecurity-topics/networking/README.md)
   * [Wireless](cybersecurity-topics/networking/wireless/README.md)
     * [Devices](cybersecurity-topics/networking/wireless/devices/README.md)
-      * [WiFi-PineApple](cybersecurity-topics/networking/wireless/devices/wifi-pineapple/README.md)
-        * [Evil-Twin/Portal Attack](cybersecurity-topics/networking/wireless/devices/wifi-pineapple/ataque-evil-twin-y-evil-portal.md)
+      * [Software Defined Radios](cybersecurity-topics/networking/wireless/devices/software-defined-radios.md)
+      * [WiFi Pineapple](cybersecurity-topics/networking/wireless/devices/wifi-pineapple.md)
+    * [✈️ Airspace Traffic Tracking](cybersecurity-topics/networking/wireless/airspace-traffic-tracking.md)
+    * [👿 Evil-Twin/Portal Attack](cybersecurity-topics/networking/wireless/ataque-evil-twin-y-evil-portal.md)
 * [🌎 Web](cybersecurity-topics/web.md)
 * [💥 Binary Analysis](cybersecurity-topics/binary-analysis/README.md)
   * [Introduction to Assembly language](cybersecurity-topics/binary-analysis/introduction-to-assembly-language.md)

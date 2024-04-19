@@ -21,7 +21,7 @@ layout:
     visible: true
 ---
 
-# Evil-Twin/Portal Attack
+# 👿 Evil-Twin/Portal Attack
 
 ## How an Evil Twin attack works?
 
@@ -58,7 +58,7 @@ The redirection to a captive portal is achieved through a combination of firewal
 
 The Evil Portal module allows us to configure and deploy an Evil-Portal attack automatically . To use this module, we first need to install it  from the modules section on the left panel.&#x20;
 
-<figure><img src="../../../../../.gitbook/assets/imagen (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/imagen (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 Once the module is installed, we need to clone the following repository to our machine:
 
@@ -66,17 +66,17 @@ Once the module is installed, we need to clone the following repository to our m
 
 After cloning the repository, we need to trasnfer it to the WiFi Pineapple using SCP to the `/root/portals` path. Once this is done, we should see all captive portal templates in the Evil Portal module on the wifi pineapple.
 
-<figure><img src="../../../../../.gitbook/assets/imagen (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/imagen (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 Now, to enable the evil portal, we need to start the web service and select the portal we want to show to the users. After activating the web server and the desired captive portal template,  we should start the evil portal using the "Start" button located above the "start web server" button.
 
-<figure><img src="../../../../../.gitbook/assets/imagen (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/imagen (2) (1).png" alt=""><figcaption></figcaption></figure>
 
 ## Configuring the Open AP
 
 First, I recommend to hide the Open Access Point to  avoid unwanted attention. It's important to enable the option that allows the APs in the Spoofed AP Pool to respond to probe requests. With this setting enabled, all clients can connect to the APs listed in the Spoofed AP Pool.
 
-<figure><img src="../../../../../.gitbook/assets/imagen (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/imagen (3).png" alt=""><figcaption></figcaption></figure>
 
 ## Add the SSID to the Spoofed AP Pool
 
@@ -91,18 +91,18 @@ Here's what happens at a technical level:
 
 In this case, we are going to add the SSID  "Star Bucks Free Wifi" to the Spoofed AP Pool.
 
-<figure><img src="../../../../../.gitbook/assets/imagen (4).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/imagen (4).png" alt=""><figcaption></figcaption></figure>
 
 While Scanning nearby WiFi networks, we can see the SSID we just added to the Spoofed AP Pool.
 
-<figure><img src="../../../../../.gitbook/assets/imagen (5).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/imagen (5).png" alt=""><figcaption></figcaption></figure>
 
 When a device connects to the fake AP that we just started, the device is going to be redirected to the evil portal where a login credential will be requested from the user.
 
-<figure><img src="../../../../../.gitbook/assets/imagen (6).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/imagen (6).png" alt=""><figcaption></figcaption></figure>
 
 If the user introduce his credentials, a notification will appear in the WiFi Pineapple telling us that someone has been fooled and we can see his credentials from the Evil Portal Module.
 
-<figure><img src="../../../../../.gitbook/assets/imagen (7).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/imagen (7).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../../../.gitbook/assets/imagen (8).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/imagen (8).png" alt=""><figcaption></figcaption></figure>

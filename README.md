@@ -101,8 +101,8 @@ Here you'll find:
 
 ## PROGRAMMING
 
-{% content-ref url="programming/python/" %}
-[python](programming/python/)
+{% content-ref url="programming/python.md" %}
+[python.md](programming/python.md)
 {% endcontent-ref %}
 
 ***
