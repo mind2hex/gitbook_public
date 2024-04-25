@@ -7,8 +7,8 @@ description: >-
 
 # Devices
 
-{% content-ref url="software-defined-radios/" %}
-[software-defined-radios](software-defined-radios/)
+{% content-ref url="software-defined-radios.md" %}
+[software-defined-radios.md](software-defined-radios.md)
 {% endcontent-ref %}
 
 {% content-ref url="wifi-pineapple.md" %}

@@ -2,6 +2,11 @@
 description: >-
   Here, you will learn WiFi hacking techniques for WPS using a wireless
   interface.
+cover: >-
+  ../../../.gitbook/assets/DALL·E 2024-04-24 22.21.04 - A close-up digital
+  illustration showing a laptop on a desk, with a prominent Wi-Fi dongle
+  connected to one of its USB ports. The laptop screen display.webp
+coverY: -475
 ---
 
 # 🛜 WiFi WPS Hacking
