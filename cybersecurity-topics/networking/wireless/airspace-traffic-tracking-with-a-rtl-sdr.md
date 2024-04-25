@@ -2,9 +2,11 @@
 description: >-
   Here, you will learn how to track airspace traffic using dump1090 to decode
   ADS-B signals with a SDR.
+cover: ../../../.gitbook/assets/Sin título.jpeg
+coverY: -66
 ---
 
-# ✈️ Airspace Traffic Tracking
+# 📻 Airspace Traffic Tracking with a RTL-SDR
 
 ***
 

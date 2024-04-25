@@ -21,7 +21,7 @@ layout:
     visible: true
 ---
 
-# 👿 Evil-Twin/Portal Attack
+# 🛜 WiFi Evil Twin/Portal Attack with a WiFi Pineapple
 
 ## How an Evil Twin attack works?
 
