@@ -22,6 +22,8 @@ layout:
 
 # 💾 Who am i?
 
+***
+
 <figure><img src=".gitbook/assets/WhatsApp Image 2024-04-18 at 8.59.32 AM.jpeg" alt="" width="375"><figcaption><p>Pic of me at RootedCon 2024</p></figcaption></figure>
 
 ***
@@ -79,7 +81,7 @@ Presenting the project "prototype of IDS in network traffic using AI"
 
 ## PROJECTS
 
-<table><thead><tr><th width="163">Project Name</th><th>Programming Language</th><th>Description</th></tr></thead><tbody><tr><td><a href="https://github.com/mind2hex/webToolkit">webToolkit</a></td><td>Python</td><td>Tools for web pentesting. <br>- webEnum<br>- webFuzz<br>- webCrawl</td></tr><tr><td><a href="https://github.com/mind2hex/NetRunner">NetRunner</a></td><td>Python</td><td>Remote Administration Tool.</td></tr><tr><td><a href="https://github.com/mind2hex/TCPCobra">TCPCobra</a></td><td>Python</td><td>Simple Python tcp proxy.</td></tr><tr><td><a href="https://imarpanama.com/">IMAR Panama</a></td><td>Python Flask</td><td>Back-End of IMAR Panama web page.</td></tr><tr><td><a href="https://github.com/mind2hex/HackPack_USB">HackPack USB</a></td><td>Python, Bash, Powershell</td><td>Kit of tools that i carry in my USB to automate enumeration and looting.</td></tr><tr><td><a href="https://github.com/search?q=owner%3Amind2hex+CVE&#x26;type=repositories">CVE's PoC</a></td><td>Python, Bash</td><td>I have developed some exploits for CVE's which you cand find in my github account.</td></tr></tbody></table>
+<table><thead><tr><th width="163">Project Name</th><th width="220">Programming Language</th><th>Description</th></tr></thead><tbody><tr><td><a href="https://pypi.org/project/wirelesswizard/">WirelessWizard</a></td><td>Python</td><td>Python project uploaded to pypi.org. <br>This project is used to handle wireless interfaces using python.</td></tr><tr><td><a href="https://github.com/mind2hex/webToolkit">webToolkit</a></td><td>Python</td><td>Tools for web pentesting. <br>- webEnum<br>- webFuzz<br>- webCrawl</td></tr><tr><td><a href="https://github.com/mind2hex/NetRunner">NetRunner</a></td><td>Python</td><td>Remote Administration Tool.</td></tr><tr><td><a href="https://github.com/mind2hex/TCPCobra">TCPCobra</a></td><td>Python</td><td>Simple Python tcp proxy.</td></tr><tr><td><a href="https://imarpanama.com/">IMAR Panama</a></td><td>Python Flask</td><td>Back-End of IMAR Panama web page.</td></tr><tr><td><a href="https://github.com/mind2hex/HackPack_USB">HackPack USB</a></td><td>Python, Bash, Powershell</td><td>Kit of tools that i carry in my USB to automate enumeration and looting.</td></tr><tr><td><a href="https://github.com/search?q=owner%3Amind2hex+CVE&#x26;type=repositories">CVE's PoC</a></td><td>Python, Bash</td><td>I have developed some exploits for CVE's which you cand find in my github account.</td></tr></tbody></table>
 
 You can see more projects i have been working on in this gitbook if you want.&#x20;
 
@@ -136,5 +138,11 @@ You might also be interested in checking out my hacker group's blog where i regu
 {% embed url="https://zerotrustoffsec.com/blog/" %}
 ZeroTrustOffsec
 {% endembed %}
+
+***
+
+## CONTACT ME
+
+{% embed url="https://www.linkedin.com/in/johan-giraldo-785a06268" %}
 
 ***
