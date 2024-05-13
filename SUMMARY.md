@@ -24,7 +24,10 @@
         * [MonitorsTwo](write-ups/hackthebox/machines/linux/easy/monitorstwo.md)
         * [Perfection](write-ups/hackthebox/machines/linux/easy/perfection.md)
     * [Windows](write-ups/hackthebox/machines/windows.md)
-* [⚡ Microcorruption](write-ups/microcorruption.md)
+* [⚡ Microcorruption](write-ups/microcorruption/README.md)
+  * [Tutorial](write-ups/microcorruption/tutorial.md)
+  * [New Orleans](write-ups/microcorruption/new-orleans.md)
+  * [Sydney](write-ups/microcorruption/sydney.md)
 
 ## Programming
 
