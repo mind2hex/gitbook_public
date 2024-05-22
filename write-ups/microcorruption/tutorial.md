@@ -251,4 +251,4 @@ After returning from `check_password` function, the result is stored in the regi
 446c: add	#0x64, sp
 ```
 
-<figure><img src="../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (8).png" alt=""><figcaption></figcaption></figure>

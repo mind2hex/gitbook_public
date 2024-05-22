@@ -244,6 +244,6 @@ To solve this challenge, we need to focus in the function `check_password` which
 
 `check_password` function simply compares two strings, the first string is being pointed by `r13` and the second string is in the address `0x2400`. Inspecting the live memory dump at the address `0x2400`, we can see the string (or the real password).
 
-<figure><img src="../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 The only thing left to do is copy the password, reset and use the password.
